@@ -197,7 +197,7 @@ namespace notSoRealistic.MyPatches
         [PatchPostfix]
         private static void Postfix(HealthParametersPanel __instance)
         {
-            //HealthParameterPanel _radiation = (HealthParameterPanel)AccessTools.Field(typeof(HealthParametersPanel), "_radiation").GetValue(__instance);
+            
             var HUD = __instance.gameObject;
             
             var profileInfo = Singleton<ClientApplication<ISession>>.Instance.GetClientBackEndSession()?.Profile;
