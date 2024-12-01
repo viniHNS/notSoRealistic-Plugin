@@ -20,7 +20,7 @@ namespace notSoRealistic.MyPatches
         private static void Postfix(ref bool __result)
         {
             __result = true;
-            Logger.LogWarning("Malfunctions can be resolved without inspection");
+            //Logger.LogWarning("Malfunctions can be resolved without inspection");
         }
         
     }
