@@ -13,7 +13,7 @@ using HarmonyLib;
 using SPT.Reflection.Patching;
 using UnityEngine;
 using Random = System.Random;
-
+using notSoRealistic.Utils;
 namespace notSoRealistic.MyPatches
 {
     
@@ -124,9 +124,6 @@ namespace notSoRealistic.MyPatches
         private static readonly String[] UpdatedDrinkablesDecreaceContamination = DrinkablesDecreaceContamination
             .Select(drink => drink + " Name")
             .ToArray();
-
-        
-        
         
         protected override MethodBase GetTargetMethod()
         {
@@ -141,35 +138,33 @@ namespace notSoRealistic.MyPatches
             if (profileInfo == null) return;
 
             var currentPoison = profileInfo.Health.Poison.Current;
-
-            var drinkContamination = 5f;
+            
+            var drinkContamination = Random.Next(4, 8); 
             var drinkContaminationDecreace = 20f;
-            var foodContamination = 3f;
+            var foodContamination = Random.Next(1, 5); 
             
             
             var chance = Plugin.ExpiredFoodChance.Value;
             var roll = Random.Next(0, 100);
             
+            if (UpdatedDrinkablesDecreaceContamination.Contains(PlayerInfo.medsController.Item.Name))
+            {
+                currentPoison -= drinkContaminationDecreace;
+                profileInfo.Health.Poison.Current = Mathf.Clamp(currentPoison, 0f, 100f);
+            }
+            
             if (roll < chance)
             {
                 // Lógica a ser executada caso a chance seja atingida
-                Logger.LogInfo($"Evento disparado com {chance}% de chance (roll: {roll})");
                 if (UpdatedDrinkablesWithContamination.Contains(PlayerInfo.medsController.Item.Name))
                 {
                     currentPoison += drinkContamination;
-                    profileInfo.Health.Poison.Current = Mathf.Clamp(currentPoison, 0f, 100f);
-                }
-
-                if (UpdatedDrinkablesDecreaceContamination.Contains(PlayerInfo.medsController.Item.Name))
-                {
-                    currentPoison -= drinkContaminationDecreace;
                     profileInfo.Health.Poison.Current = Mathf.Clamp(currentPoison, 0f, 100f);
                 }
                 
             }
             else
             {
-                // Opcional: lógica para caso o evento não seja disparado
                 Logger.LogInfo($"Evento não disparado (chance: {chance}%, roll: {roll})");
             }
             
@@ -218,15 +213,14 @@ namespace notSoRealistic.MyPatches
             if (!poison) return;
             
             var current = poison.transform.Find("Current")?.gameObject;
-            if (current)
-            {
-                var toxicityLevel = Mathf.Round(currentPoison);
-                var currentUI = current.GetComponent<CustomTextMeshProUGUI>();
-                currentUI.text = toxicityLevel.ToString();
-                // Define the color based on toxicity level
-                currentUI.color = GetToxicityColor(toxicityLevel);
-                currentUI.fontSize = 28f;
-            }
+            if (!current) return;
+            
+            var toxicityLevel = Mathf.Round(currentPoison);
+            var currentUI = current.GetComponent<CustomTextMeshProUGUI>();
+            currentUI.text = toxicityLevel.ToString();
+            // Define the color based on toxicity level
+            currentUI.color = GetToxicityColor(toxicityLevel);
+            currentUI.fontSize = 28f;
         }
     }
     
@@ -268,11 +262,9 @@ namespace notSoRealistic.MyPatches
                 Logger.LogError("PlayerInfo.medsController.Item is null.");
                 return;
             }
-            Logger.LogInfo(PlayerInfo.medsController.Item.Name);
             if (PlayerInfo.medsController.Item.Name == exodrine )
             {
-                
-                PlayerInfo.player.StartCoroutine(DelayExodrine(PlayerInfo.player, 2f));
+                PlayerInfo.player.StartCoroutine(DelayExodrine(PlayerInfo.player, 306f));
             }
             
         }
@@ -282,7 +274,6 @@ namespace notSoRealistic.MyPatches
             
             yield return new WaitForSeconds(time);
             
-            
             var actualHpRightLeg = PlayerInfo.player.ActiveHealthController.GetBodyPartHealth(EBodyPart.RightLeg);
             var actualHpLeftLeg = PlayerInfo.player.ActiveHealthController.GetBodyPartHealth(EBodyPart.LeftLeg);
             
@@ -291,84 +282,11 @@ namespace notSoRealistic.MyPatches
             
             PlayerInfo.player.ActiveHealthController.DestroyBodyPart(EBodyPart.RightLeg, EDamageType.Stimulator);
             PlayerInfo.player.ActiveHealthController.DestroyBodyPart(EBodyPart.LeftLeg, EDamageType.Stimulator);
-            ApplyBleeding(player, EBodyPart.Stomach, "HeavyBleeding");
-            ApplyEffect(player, "Tremor", EBodyPart.Head, 0f, 120f, 10f, 1);
-
-
+            TarkovEffects.ApplyBleeding(player, EBodyPart.Stomach, "HeavyBleeding");
+            TarkovEffects.ApplyEffect(player, "Tremor", EBodyPart.Head, 0f, 120f, 10f, 1);
+            
         }
         
-        private static void ApplyBleeding(Player player, EBodyPart bodyPart, string bleedingTypeName)
-        {
-            // Retrieve the bleeding type class using Reflection
-            var bleedingType = typeof(ActiveHealthController).GetNestedType(bleedingTypeName, BindingFlags.NonPublic);
-
-            if (bleedingType == null)
-            {
-                Logger.LogError($"Bleeding type {bleedingTypeName} not found.");
-                return;
-            }
-
-            // Retrieve the DoBleed method with specific parameter types
-            var doBleedMethod = typeof(ActiveHealthController).GetMethod(
-                "DoBleed",
-                BindingFlags.Instance | BindingFlags.Public,
-                null,
-                new[] { typeof(EBodyPart) },
-                null
-            );
-
-            if (doBleedMethod == null)
-            {
-                Logger.LogError("DoBleed method not found.");
-                return;
-            }
-
-            // Use Reflection to call the generic method DoBleed with the correct type
-            doBleedMethod.MakeGenericMethod(bleedingType)
-                .Invoke(player.ActiveHealthController, new object[] { bodyPart });
-        }
-        
-        public static void ApplyEffect(Player player, string effectName, EBodyPart bodyPart, float? delayTime, float? duration, float? residueTime, float? strength)
-        {
-            // Effects: TunnelVision, Contusion, Tremor, LightBleeding, HeavyBleeding
-    
-            // Verificar se o player e o ActiveHealthController estão presentes
-            if (!player || player.ActiveHealthController == null)
-            {
-                throw new InvalidOperationException("Player or ActiveHealthController is null.");
-            }
-
-            // Use Reflection to find the nested effect type
-            var effectType = typeof(ActiveHealthController)
-                .GetNestedType(effectName, BindingFlags.NonPublic | BindingFlags.Instance);
-
-            if (effectType == null)
-            {
-                throw new InvalidOperationException($"Effect type '{effectName}' not found in ActiveHealthController.");
-            }
-
-            // Retrieve the generic AddEffect method
-            var addEffectMethod = GetEffectMethod();
-            if (addEffectMethod == null)
-            {
-                throw new InvalidOperationException("AddEffect method not found in ActiveHealthController.");
-            }
-
-            // Make the method generic for the desired effect type and invoke it
-            addEffectMethod.MakeGenericMethod(effectType)
-                .Invoke(player.ActiveHealthController, new object[] { bodyPart, delayTime, duration, residueTime, strength, null });
-        }
-
-        private static MethodInfo GetEffectMethod()
-        {
-            // Use Reflection to find the AddEffect method with the appropriate signature
-            return typeof(ActiveHealthController).GetMethods(BindingFlags.Public | BindingFlags.Instance)
-                .FirstOrDefault(method =>
-                    method.IsGenericMethod &&
-                    method.GetParameters().Length == 6 &&
-                    method.GetParameters()[0].Name == "bodyPart" &&
-                    method.GetParameters()[5].Name == "initCallback");
-        }
     }
     
 }
