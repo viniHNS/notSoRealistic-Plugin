@@ -44,10 +44,7 @@ namespace notSoRealistic
                 "Allows the player to resolve weapon malfunctions without inspecting the weapon first.");
             RemoveBossMalfunctions = Config.Bind("Weapon Changes", "Remove boss malfunctions", true,
                 "Removes weapon malfunctions caused by bosses.");
-            ExpiredFoodChance = Config.Bind<int>("Other Changes", "Contaminated Food Chance", 0,
-                new ConfigDescription("Chance to the food contaminate the player",
-                    new AcceptableValueRange<int>(0, 100)));
-
+            
             PatchManager.EnablePatches();
         }
 
