@@ -13,7 +13,6 @@ This is a mod for [SPT](https://www.sp-tarkov.com "The main goal of the project 
 - Allows sprinting while using meds—because pain can't always slow you down.
 - Allows the player to resolve weapon malfunctions without inspecting the weapon first.
 - Removes weapon malfunctions caused by bosses.
-- Adds a chance for food to contaminate the player.
 
 ## Installation
 
