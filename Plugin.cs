@@ -12,7 +12,7 @@ using UnityEngine;
 namespace notSoRealistic
 {
     // first string below is your plugin's GUID, it MUST be unique to any other mod. Read more about it in BepInEx docs. Be sure to update it if you copy this project.
-    [BepInPlugin("com.vinihns.notSoRealistic", "Not So Realistic!", "1.0.0")]
+    [BepInPlugin("com.vinihns.notSoRealistic", "Not So Realistic!", "1.1.0")]
 
 
 
@@ -51,83 +51,7 @@ namespace notSoRealistic
             PatchManager.EnablePatches();
         }
 
-
-        private void Update()
-        {
-            if (ExpiredFoodChance.Value <= 0) return;
-            
-            var gameWorld = Singleton<GameWorld>.Instance;
-
-            if (!gameWorld || !gameWorld.MainPlayer) return;
-
-            if (PlayerInfo.player is HideoutPlayer) return;
-
-            profileInfo = Singleton<ClientApplication<ISession>>.Instance.GetClientBackEndSession()?.Profile;
-
-            if (profileInfo == null)
-            {
-                LogSource.LogError("profileInfo is null");
-                return;
-            }
-
-            if (profileInfo.Health == null)
-            {
-                LogSource.LogError("profileInfo.Health is null");
-                return;
-            }
-
-            if (profileInfo.Health.Poison == null)
-            {
-                LogSource.LogError("profileInfo.Health.Poison is null");
-                return;
-            }
-
-            timeSinceLastContusion += Time.deltaTime;
-
-            // Adjust contusion interval based on poison level
-            if (profileInfo.Health.Poison.Current > 20 && profileInfo.Health.Poison.Current <= 40)
-            {
-                contusionInterval = 120f;
-            }
-            else if (profileInfo.Health.Poison.Current > 40 && profileInfo.Health.Poison.Current <= 80)
-            {
-                contusionInterval = 60f;
-            }
-            else if (profileInfo.Health.Poison.Current > 80)
-            {
-                contusionInterval = 30f;
-            }
-            else
-            {
-                contusionInterval = 120f;
-            }
-
-            if (!(timeSinceLastContusion >= contusionInterval)) return;
-
-            if (profileInfo.Health.Poison.Current > 20 && profileInfo.Health.Poison.Current <= 40)
-            {
-                PlayerInfo.player.ActiveHealthController.DoContusion(5, 50);
-                PlayerInfo.player.ActiveHealthController.DoStun(1, 0);
-            }
-
-            if (profileInfo.Health.Poison.Current > 40 && profileInfo.Health.Poison.Current <= 80)
-            {
-                PlayerInfo.player.ActiveHealthController.DoContusion(10, 50);
-                PlayerInfo.player.ActiveHealthController.DoStun(1, 0);
-                TarkovEffects.ApplyEffect(PlayerInfo.player, "Tremor", EBodyPart.Head, 0f, 45f, 10f, 1);
-            }
-
-            if (profileInfo.Health.Poison.Current > 80)
-            {
-                PlayerInfo.player.ActiveHealthController.DoContusion(10, 50);
-                PlayerInfo.player.ActiveHealthController.DoStun(1, 0);
-                TarkovEffects.ApplyEffect(PlayerInfo.player, "Tremor", EBodyPart.Head, 0f, 45f, 10f, 1);
-                TarkovEffects.ApplyEffect(PlayerInfo.player, "TunnelVision", EBodyPart.Head, 0f, 20f, 10f, 1);
-                TarkovEffects.ApplyBleeding(PlayerInfo.player, EBodyPart.Head, "LightBleeding");
-            }
-
-            timeSinceLastContusion = 0f;
-        }
+        
         
     }
     
