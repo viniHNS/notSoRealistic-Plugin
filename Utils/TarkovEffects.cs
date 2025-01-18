@@ -4,6 +4,7 @@ using System.Linq;
 using EFT;
 using EFT.HealthSystem;
 using System.Reflection;
+// ReSharper disable InconsistentNaming
 
 namespace notSoRealistic.Utils
 {
