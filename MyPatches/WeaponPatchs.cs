@@ -5,6 +5,7 @@ using EFT.HealthSystem;
 using HarmonyLib;
 using static EFT.InventoryLogic.Weapon;
 using SPT.Reflection.Patching;
+// ReSharper disable InconsistentNaming
 
 namespace notSoRealistic.MyPatches
 {
@@ -19,7 +20,10 @@ namespace notSoRealistic.MyPatches
         [PatchPostfix]
         private static void Postfix(ref bool __result)
         {
-            __result = true;
+            if (Plugin.CanResolveMalfunctionsWithoutInspection.Value)
+            {
+                __result = true;
+            }
             //Logger.LogWarning("Malfunctions can be resolved without inspection");
         }
         
