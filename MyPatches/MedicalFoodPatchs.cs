@@ -1,20 +1,16 @@
 ﻿
-using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using EFT;
 using EFT.HealthSystem;
 using System.Reflection;
-using System.Timers;
 using Comfort.Common;
-using EFT.UI.Health;
 using HarmonyLib;
 using SPT.Reflection.Patching;
 using UnityEngine;
-using Random = System.Random;
 using notSoRealistic.Utils;
 namespace notSoRealistic.MyPatches
+
+// ReSharper disable InconsistentNaming
 {
     
     internal partial struct PlayerInfo
@@ -48,8 +44,6 @@ namespace notSoRealistic.MyPatches
         {
             get => itemHandsController as Player.UsableItemController;
         }
-
-        
     }
     
     public class CanWalkInSurgeryPatch : ModulePatch // all patches must inherit ModulePatch
@@ -61,9 +55,17 @@ namespace notSoRealistic.MyPatches
         }
 
         [PatchPrefix]
-        private static bool Prefix(EPhysicalCondition c, ref bool __result)
+        private static bool Prefix(EPhysicalCondition c, ref bool __result, Player ____player)
         {
 
+            // If this player instance is not the main player, don't continue the rest of the method
+            if (!____player.IsYourPlayer || PlayerInfo.player is HideoutPlayer)
+            {
+                return true;
+            }
+            
+            
+            
             if (c == EPhysicalCondition.HealingLegs && Plugin.CanWalkInSurgery.Value)
             {
                 __result = false;
@@ -83,8 +85,15 @@ namespace notSoRealistic.MyPatches
         }
 
         [PatchPrefix]
-        private static bool Prefix(EPhysicalCondition c, ref bool __result)
+        private static bool Prefix(EPhysicalCondition c, ref bool __result, Player ____player)
         {
+            // If this player instance is not the main player, don't continue the rest of the method
+            if (!____player.IsYourPlayer || PlayerInfo.player is HideoutPlayer)
+            {
+                return true;
+            }
+            
+            Plugin.LogSource.LogWarning("_PLAYER => " + ____player.Profile.Info.Nickname);
 
             if (c == EPhysicalCondition.UsingMeds && Plugin.CanSprintUsingMeds.Value)
             {
@@ -105,7 +114,7 @@ namespace notSoRealistic.MyPatches
         //private static HashSet<Player> _playersWithPendingFracture = new HashSet<Player>();
         
         // Dictionary to store the timer for each player
-        private static Dictionary<Player, Timer> _playerTimers = new Dictionary<Player, Timer>();
+        // private static Dictionary<Player, Timer> _playerTimers = new Dictionary<Player, Timer>();
 
         protected override MethodBase GetTargetMethod()
         {
@@ -160,7 +169,5 @@ namespace notSoRealistic.MyPatches
             TarkovEffects.ApplyEffect(player, "Tremor", EBodyPart.Head, 0f, 120f, 10f, 1);
             
         }
-        
     }
-    
 }
