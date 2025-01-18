@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using SPT.Reflection.Patching;
+// ReSharper disable InconsistentNaming
 
 namespace notSoRealistic.Utils
 {
