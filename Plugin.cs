@@ -8,14 +8,13 @@ using notSoRealistic.MyPatches;
 using notSoRealistic.Utils;
 using System.Timers;
 using UnityEngine;
+// ReSharper disable InconsistentNaming
 
 namespace notSoRealistic
 {
     // first string below is your plugin's GUID, it MUST be unique to any other mod. Read more about it in BepInEx docs. Be sure to update it if you copy this project.
     [BepInPlugin("com.vinihns.notSoRealistic", "Not So Realistic!", "1.1.0")]
-
-
-
+    
     public class Plugin : BaseUnityPlugin
     {
         public static ManualLogSource LogSource;
@@ -23,13 +22,7 @@ namespace notSoRealistic
         public static ConfigEntry<bool> CanSprintUsingMeds;
         public static ConfigEntry<bool> CanResolveMalfunctionsWithoutInspection;
         public static ConfigEntry<bool> RemoveBossMalfunctions;
-        public static ConfigEntry<int> ExpiredFoodChance;
-
-        private Profile profileInfo;
-
-        private float timeSinceLastContusion = 0f;
-        private float contusionInterval = 60f;
-
+        
         private void Awake()
         {
             LogSource = Logger;
@@ -47,9 +40,5 @@ namespace notSoRealistic
             
             PatchManager.EnablePatches();
         }
-
-        
-        
     }
-    
 }
